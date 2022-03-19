@@ -9,9 +9,9 @@ class LinkedList:
         self.head = head
         self.length = 1
         self.tail = self.head
-        self.iter = self.head
 
     def __iter__(self):
+        self.iter = self.head
         return self
 
     def __next__(self):
@@ -20,32 +20,31 @@ class LinkedList:
             self.iter = self.iter.next
             return res
         else:
-            self.iter = self.head
+            # self.iter = self.head
             raise StopIteration
 
     def input_data(self):
         new_data = input()
-        # current = self.head
         while new_data != '':
-            # current.next = LinkedElem(new_data)
             self.add_data(new_data)
             new_data = input()
-            # current = current.next
             self.length += 1
-        # self.tail = current
 
     def add_data(self, new_data):
         self.tail.next = LinkedElem(new_data)
         self.tail = self.tail.next
-        # for i in range(self.length - 1):
-        #     current = current.next
-        # current.next = LinkedElem(new_data)
 
     def print_list(self):
         current = self.head
         while current is not None:
             print(current.data)
             current = current.next
+
+    def __str__(self):
+        string_out = ''
+        for node in self:
+            string_out += str(node.data) + ' -> '
+        return string_out[:-4]
 
     def max(self):
         current = self.head
@@ -109,6 +108,7 @@ class LinkedList:
             current = current.next
         if current is not None:
             previous.next = current.next
+            del current
             self.length -= 1
         if previous.data is None:
             if self.head.next is not None:
@@ -165,22 +165,21 @@ class LinkedList:
             current = current.next
 
 
-if __name__ == '__name__':
-    first = LinkedElem('1')
+if __name__ == '__main__':
+    first = LinkedElem([1, 2])
     linked_list = LinkedList(first)
     linked_list.input_from_file('test.txt')
     # linked_list.input_data()
     linked_list.add_data('5')
     linked_list.add_data('3')
     linked_list.add_data('10')
-    linked_list.print_list()
+    print(linked_list)
     # linked_list.delete_every_second()
-    print()
-    linked_list.print_list()
-    print()
+    linked_list.del_first_by_value([1, 2])
+    print(linked_list)
     for el in linked_list:
         print(el.data, end=' ')
-
+    print()
     for el in linked_list:
         print(el.data, end=' ')
     # linked_list.ins_value('new', '4')
