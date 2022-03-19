@@ -112,7 +112,9 @@ class LinkedList:
             self.length -= 1
         if previous.data is None:
             if self.head.next is not None:
-                self.head = self.head.next
+                tmp = self.head.next
+                del self.head
+                self.head = tmp
             else:
                 self.head = None
 
@@ -168,7 +170,7 @@ class LinkedList:
 if __name__ == '__main__':
     first = LinkedElem([1, 2])
     linked_list = LinkedList(first)
-    linked_list.input_from_file('test.txt')
+    # linked_list.input_from_file('test.txt')
     # linked_list.input_data()
     linked_list.add_data('5')
     linked_list.add_data('3')
@@ -178,10 +180,7 @@ if __name__ == '__main__':
     linked_list.del_first_by_value([1, 2])
     print(linked_list)
     for el in linked_list:
-        print(el.data, end=' ')
-    print()
-    for el in linked_list:
-        print(el.data, end=' ')
+        print(el.data, end=' -> ')
     # linked_list.ins_value('new', '4')
     # linked_list.print_list()
     # linked_list.add_data('new_data')
