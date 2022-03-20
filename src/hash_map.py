@@ -74,7 +74,7 @@ class HashMap:
         string = '{  ' if string == '{' else string
         return string[:-2] + '}'
 
-    def __repr__(self):  # for serialization
+    def to_string(self):  # for serialization
         string = ''
         for elem in self._inner_list:
             if elem is not None:
@@ -86,6 +86,9 @@ class HashMap:
 
     def __len__(self):
         return self._size
+
+    def get_capacity(self):
+        return self._capacity
 
 
 if __name__ == '__main__':
