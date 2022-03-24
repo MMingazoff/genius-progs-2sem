@@ -1,28 +1,49 @@
+"""
+Module for testing binary tree map data structure
+"""
 import unittest
 from map_tests import MapTesting
 from src.tree_map import TreeMap
 
 
 class BinaryTreeTesting(MapTesting, unittest.TestCase):
-    def setUp(self):
-        self.map = TreeMap()
+    """
+    Class for testing binary tree map methods
+    """
+    map_cls = TreeMap
 
     def test_less_in_left(self):
+        """
+        Checks if node with less key is added to the left
+        :return: None
+        """
         self.map[8] = 'root'
         self.map[7] = 'left'
         self.assertEqual(self.map[7], self.map.root.left.value)
 
-    def test_more_in_right(self):
+    def test_greater_in_right(self):
+        """
+        Checks if node with greater key is added to the right
+        :return: None
+        """
         self.map[8] = 'root'
         self.map[10] = 'right'
         self.assertEqual(self.map[10], self.map.root.right.value)
 
     def test_string_keys(self):
+        """
+        Checks if works with string keys
+        :return: None
+        """
         self.map['b'] = 'root'
         self.map['a'] = 1
         self.assertEqual(self.map['a'], self.map.root.left.value)
 
     def test_del_leaf(self):
+        """
+        Checks deletion of node with no children
+        :return: None
+        """
         self.map[5] = 'root'
         self.map[8] = 'right'
         self.map[4] = 'left'
@@ -31,6 +52,10 @@ class BinaryTreeTesting(MapTesting, unittest.TestCase):
         self.assertEqual(self.map.root.right.right, None)
 
     def test_del_node_with_one_child(self):
+        """
+        Checks deletion of node with one child
+        :return: None
+        """
         self.map[33] = 'root'
         self.map[35] = 'right'
         self.map[5] = 'left'
@@ -44,6 +69,10 @@ class BinaryTreeTesting(MapTesting, unittest.TestCase):
         self.assertEqual(self.map.root.left.left.value, 'left->left->right')
 
     def test_del_node_with_two_children(self):
+        """
+        Checks deletion of node with both children
+        :return: None
+        """
         self.map[10] = 'root'
         self.map[7] = 'left'
         self.map[12] = 'right'
