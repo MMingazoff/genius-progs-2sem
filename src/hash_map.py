@@ -1,8 +1,16 @@
+"""
+Hash map.
+Every node of hash map has key and value (some data).
+Based on default list but key is calculated according to
+key's hash value
+"""
 from src.linked_list import LinkedElem, LinkedList
 
 
 class HashMap:
-
+    """
+    Hash map data structure class
+    """
     def __init__(self, _capacity=10):
         self._inner_list = [None] * _capacity
         self._capacity = _capacity
@@ -23,7 +31,7 @@ class HashMap:
             for node in self._inner_list[hashed_key]:
                 if node.data[0] == key:
                     node.data[1] = value
-                    self._size -= 1  # when the key exists it should be rewritten and the size shouldn't be increased
+                    self._size -= 1  # when the key exists the size shouldn't be increased
                     to_add = False
                     break
             if to_add:
@@ -75,6 +83,10 @@ class HashMap:
         return string[:-2] + '}'
 
     def to_string(self):  # for serialization
+        """
+        Method that serializes hash map's data
+        :return: string
+        """
         string = ''
         for elem in self._inner_list:
             if elem is not None:
@@ -88,6 +100,10 @@ class HashMap:
         return self._size
 
     def get_capacity(self):
+        """
+        Gets inner list's capacity
+        :return: int
+        """
         return self._capacity
 
 
@@ -113,5 +129,3 @@ if __name__ == '__main__':
     print(len(hash_map))
     del hash_map[5.1]
     print(0)
-
-
