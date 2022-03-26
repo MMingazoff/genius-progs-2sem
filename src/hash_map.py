@@ -131,28 +131,19 @@ class HashMap:
         """
         return self._capacity
 
+    def write_in_file(self, filename):
+        """
+        Writes hash map in file in a pretty way
+        :return: None
+        """
+        with open(filename, 'a', encoding='utf8') as file:
+            file.write('{')
+            for elem in self:
+                file.write(f'{elem.data[0]}:{elem.data[1]}; ')
+            file.write('}\n')
+
 
 if __name__ == '__main__':
-    # hash_map = HashMap()
-    # hash_map[5] = 1
-    # hash_map[5.4] = 2
-    # hash_map['bb'] = 'aboba'
-    # hash_map['bb'] = 'notaboba'
-    # hash_map['last'] = 'ultralast'
-    # print(hash_map)
-    # print(len(hash_map))
-    # for letter in 'abcdefgh':
-    #     hash_map[letter] = ord(letter)
-    # print('---extension---')
-    # print(hash_map)
-    # print(len(hash_map))
-    # del hash_map['bb']
-    # for letter in 'abcdefgh':
-    #     del hash_map[letter]
-    # print('---deletion---')
-    # print(hash_map)
-    # print(len(hash_map))
-    # print(0)
     hash_map = HashMap()
     for el in 'abcdefghijk':
         hash_map[el] = randint(1, 100)
