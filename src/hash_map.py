@@ -4,8 +4,8 @@ Every node of hash map has key and value (some data).
 Based on default list but key is calculated according to
 key's hash value
 """
-from src.linked_list import LinkedElem, LinkedList
 from random import randint  # for tests
+from src.linked_list import LinkedElem, LinkedList
 
 
 class HashMap:
