@@ -4,9 +4,9 @@ This code parses random wikipedia article.
 2. In text finds links to other wikipedia articles and does (1.) with each.
 """
 import re
-from hash_map import HashMap
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
+from src.hash_map import HashMap
 
 
 def count_words(html_txt: str, hash_map: HashMap) -> HashMap:
@@ -25,7 +25,7 @@ def count_words(html_txt: str, hash_map: HashMap) -> HashMap:
     splitters = r'|'.join(splitters)
     words = re.split(splitters, main_txt.get_text())  # \s|\[|\]|,|;|\.|\(|\)|\n|\\|
     for word in words:
-        if word != '' and word.isalpha():  # to count number also, isalpha should be changed to isalnum
+        if word != '' and word.isalpha():  # to count numbers, isalpha should be changed to isalnum
             lower_word = word.lower()
             hash_map[lower_word] = hash_map.get(lower_word, 0) + 1
     return hash_map
@@ -53,17 +53,17 @@ def get_urls(html_txt: str, max_urls=-1) -> set:
     return url_list
 
 
-def get_html(url: str) -> str:
+def get_html(_url: str) -> str:
     """
     Gets html code of website
-    :param url: link
+    :param _url: link
     :return: decoded html
     """
-    response = urlopen(url)
-    if url[-6:len(url)] == 'Random':
-        print(response.geturl())
-    response_bytes = response.read()
-    return response_bytes.decode("utf8")
+    with urlopen(_url) as response:
+        if _url[-6:len(_url)] == 'Random':
+            print(response.geturl())
+        response_bytes = response.read()
+        return response_bytes.decode("utf8")
 
 
 def counted_words_sum(words: [list, HashMap]) -> int:
@@ -78,18 +78,18 @@ def counted_words_sum(words: [list, HashMap]) -> int:
     return total
 
 
-def url_is_valid(url: str) -> bool:
+def url_is_valid(_url: str) -> bool:
     """
     Checks if URL leads to other wikipedia article
-    :param url: url
-    :return: true if url is valid / false if not
+    :param _url: url
+    :return: true if _url is valid / false if not
     """
-    if not url.startswith('/wiki/'):
+    if not _url.startswith('/wiki/'):
         return False
     black_list = ['gif', 'jpg', 'svg']
-    if url[-3:len(url)] in black_list:
+    if _url[-3:len(_url)] in black_list:
         return False
-    if 'Edit' in url:
+    if 'Edit' in _url:
         return False
     return True
 
@@ -113,13 +113,13 @@ if __name__ == "__main__":
     for new_hashmap_num in range(NEXT_URLS_NUM):
         secondary_words.append(HashMap())
 
-    file = 'C:\\Users\\minga\\Desktop\\test.txt'
-    url_num = 0
+    FILE = 'C:\\Users\\minga\\Desktop\\test.txt'
+    URL_NUM = 0
     for url in get_urls(txt, NEXT_URLS_NUM):
         print(url)
-        count_words(get_html(url), secondary_words[url_num])
-        secondary_words[url_num].write_in_file(file)
-        # print(secondary_words[url_num].sort(reverse=True))  # sorted list of words
-        print(counted_words_sum(secondary_words[url_num]))
-        url_num += 1
+        count_words(get_html(url), secondary_words[URL_NUM])
+        secondary_words[URL_NUM].write_in_file(FILE)
+        # print(secondary_words[URL_NUM].sort(reverse=True))  # sorted list of words
+        print(counted_words_sum(secondary_words[URL_NUM]))
+        URL_NUM += 1
         print('----------------------------')
