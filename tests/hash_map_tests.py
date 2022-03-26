@@ -63,6 +63,18 @@ class HashMapTesting(MapTesting, unittest.TestCase):
         new_size = len(self.map)
         self.assertEqual(old_size, new_size)
 
+    def test_get(self):
+        """
+        Checks if method get works properly.
+        Returns value if key exists/ default if key doesn't exist
+        :return: None
+        """
+        self.map[1] = 2
+        check_has = self.map.get(1, 0)
+        check_no = self.map.get(2, 0)
+        self.assertEqual(check_has, 2)
+        self.assertEqual(check_no, 0)
+
 
 if __name__ == '__main__':
     unittest.main()

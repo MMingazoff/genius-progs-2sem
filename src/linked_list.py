@@ -12,6 +12,15 @@ class LinkedElem:
         self.data = data
         self.next_ = next_
 
+    def __str__(self):
+        """
+        For hash map use
+        :return: key:value string
+        """
+        return f'{self.data[0]}:{self.data[1]}'
+
+    __repr__ = __str__
+
     def get_data(self):
         """
         Returns node's data

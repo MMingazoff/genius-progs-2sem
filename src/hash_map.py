@@ -5,6 +5,7 @@ Based on default list but key is calculated according to
 key's hash value
 """
 from src.linked_list import LinkedElem, LinkedList
+from random import randint  # for tests
 
 
 class HashMap:
@@ -73,6 +74,11 @@ class HashMap:
                             new_inner_list[hashed_key] = LinkedList(LinkedElem(node.data))
             self._inner_list = new_inner_list
 
+    def __iter__(self):
+        for elem in self._inner_list:
+            if elem is not None:
+                yield from elem
+
     def __str__(self):
         string = '{'
         for elem in self._inner_list:
@@ -81,6 +87,25 @@ class HashMap:
                     string += f'{node.data[0]}:{node.data[1]}; '  # key, value
         string = '{  ' if string == '{' else string
         return string[:-2] + '}'
+
+    def sort(self, reverse=False):
+        """
+        Sorts hash map by values
+        :return: sorted list
+        """
+        return sorted(self, key=lambda el: el.data[1], reverse=reverse)
+
+    def get(self, key, default=None):
+        """
+        Returns value of key if it exists.
+        If not - returns default value.
+        :return: value of key or default
+        """
+        try:
+            value = self[key]
+        except KeyError:
+            return default
+        return value
 
     def to_string(self):  # for serialization
         """
@@ -108,24 +133,27 @@ class HashMap:
 
 
 if __name__ == '__main__':
+    # hash_map = HashMap()
+    # hash_map[5] = 1
+    # hash_map[5.4] = 2
+    # hash_map['bb'] = 'aboba'
+    # hash_map['bb'] = 'notaboba'
+    # hash_map['last'] = 'ultralast'
+    # print(hash_map)
+    # print(len(hash_map))
+    # for letter in 'abcdefgh':
+    #     hash_map[letter] = ord(letter)
+    # print('---extension---')
+    # print(hash_map)
+    # print(len(hash_map))
+    # del hash_map['bb']
+    # for letter in 'abcdefgh':
+    #     del hash_map[letter]
+    # print('---deletion---')
+    # print(hash_map)
+    # print(len(hash_map))
+    # print(0)
     hash_map = HashMap()
-    hash_map[5] = 1
-    hash_map[5.4] = 2
-    hash_map['bb'] = 'aboba'
-    hash_map['bb'] = 'notaboba'
-    hash_map['last'] = 'ultralast'
-    print(hash_map)
-    print(len(hash_map))
-    for letter in 'abcdefgh':
-        hash_map[letter] = ord(letter)
-    print('---extension---')
-    print(hash_map)
-    print(len(hash_map))
-    del hash_map['bb']
-    for letter in 'abcdefgh':
-        del hash_map[letter]
-    print('---deletion---')
-    print(hash_map)
-    print(len(hash_map))
-    del hash_map[5.1]
-    print(0)
+    for el in 'abcdefghijk':
+        hash_map[el] = randint(1, 100)
+    print(hash_map.sort())
