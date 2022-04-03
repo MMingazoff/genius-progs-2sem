@@ -52,6 +52,33 @@ class MapTesting(ABC, unittest.TestCase):
         self.map[1] = 'new value'
         self.assertEqual(self.map[1], 'new value')
 
+    def test_read_data(self):
+        """
+        Checks if function reads data from file properly
+        :return: None
+        """
+        filepath = 'files/to_read.txt'
+        self.map = self.map.read(filepath)
+        self.assertEqual(len(self.map), 3)
+        self.assertEqual(self.map['babagi'], 'fortaite')
+
+    def test_write_data(self):
+        """
+        Checks if function writes data in file properly
+        :return: None
+        """
+        filepath = 'files/to_write.txt'
+        self.map[1] = 'first'
+        self.map[2] = 'second'
+        self.map.write(filepath, 'w')
+        with open(filepath, 'r', encoding='utf8') as file:
+            line = file.readline()
+            while line != '':
+                key, value = line.split()
+                key = int(key[:-1])
+                self.assertEqual(value, self.map[key])
+                line = file.readline()
+
 
 if __name__ == '__main__':
     pass

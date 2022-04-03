@@ -3,6 +3,7 @@ Binary Search Tree.
 Node keys on the left are less than the key of a parent node.
 Node keys on the right are less than the key of a parent node.
 """
+from src.maps.base_map import BaseMap
 
 
 class Node:
@@ -25,12 +26,13 @@ class Node:
         return self.key
 
 
-class TreeMap:
+class TreeMap(BaseMap):
     """
     Binary Search Tree class
     """
     def __init__(self, root=None):
         self.root = root
+        self.size = 0
 
     def __setitem__(self, key, value):
         def set_node(node):
@@ -46,11 +48,13 @@ class TreeMap:
                     set_node(node.left)
             elif key == node.key:
                 node.value = value
+                self.size -= 1
 
         if self.root is None:
             self.root = Node(key, value)
         else:
             set_node(self.root)
+        self.size += 1
 
     def __getitem__(self, key):
         def get_node(node):
@@ -100,14 +104,23 @@ class TreeMap:
             del self.root
             self.root = None
         del_node(self.root, key)
+        self.size -= 1
+
+    def __iter__(self):
+        def iter_node(node):
+            if node is not None:
+                yield node
+                yield from iter_node(node.left)
+                yield from iter_node(node.right)
+
+        yield from iter_node(self.root)
+
+    def __len__(self):
+        return self.size
 
 
 if __name__ == '__main__':
     tree = TreeMap()
-    # tree[13] = 'second'
-    # print(tree[13], tree.root.value)
-    # tree[7] = 'third'
-    # print(tree[7])
     tree[10] = 'root'
     tree[7] = 'left'
     tree[12] = 'right'
@@ -115,7 +128,5 @@ if __name__ == '__main__':
     tree[8] = 'left->right->left'
     tree[6] = 'left->left'
     del tree[9]
-    # print
-    # print(tree[7], tree.root.left, tree.root.right)
-    # tree[6] = 'forth'
-    # print(tree[6], tree.root.left.left.key, tree.root.right)
+    for el in tree:
+        print(el)

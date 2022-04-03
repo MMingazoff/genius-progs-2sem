@@ -3,7 +3,7 @@ Module for testing binary tree map data structure
 """
 import unittest
 from map_tests import MapTesting
-from src.tree_map import TreeMap
+from src.maps.tree_map import TreeMap
 
 
 class BinaryTreeTesting(MapTesting, unittest.TestCase):

@@ -5,10 +5,11 @@ Based on default list but key is calculated according to
 key's hash value
 """
 from random import randint  # for tests
-from src.linked_list import LinkedElem, LinkedList
+from src.maps.linked_list import LinkedElem, LinkedList
+from src.maps.base_map import BaseMap
 
 
-class HashMap:
+class HashMap(BaseMap):
     """
     Hash map data structure class
     """
@@ -21,8 +22,8 @@ class HashMap:
         hashed_key = hash(key) % self._capacity
         if self._inner_list[hashed_key] is not None:
             for node in self._inner_list[hashed_key]:
-                if node.data[0] == key:
-                    return node.data[1]
+                if node.key == key:
+                    return node.value
         raise KeyError('Such key does not exists')
 
     def __setitem__(self, key, value):
@@ -30,15 +31,15 @@ class HashMap:
         if self._inner_list[hashed_key] is not None:
             to_add = True
             for node in self._inner_list[hashed_key]:
-                if node.data[0] == key:
-                    node.data[1] = value
+                if node.key == key:
+                    node.value = value
                     self._size -= 1  # when the key exists the size shouldn't be increased
                     to_add = False
                     break
             if to_add:
-                self._inner_list[hashed_key].add_data([key, value])
+                self._inner_list[hashed_key].add_data(key, value)
         else:
-            self._inner_list[hashed_key] = LinkedList(LinkedElem([key, value]))
+            self._inner_list[hashed_key] = LinkedList(LinkedElem(key, value))
         self._size += 1
 
         if self._size >= 0.7 * self._capacity:  # list extension when more than 70% is filled
@@ -47,18 +48,18 @@ class HashMap:
             for elem in self._inner_list:
                 if elem is not None:
                     for node in elem:
-                        hashed_key = hash(node.data[0]) % self._capacity
+                        hashed_key = hash(node.key) % self._capacity
                         if new_inner_list[hashed_key] is not None:
-                            new_inner_list[hashed_key].add_data(node.data)
+                            new_inner_list[hashed_key].add_data(node.key, node.value)
                         else:
-                            new_inner_list[hashed_key] = LinkedList(LinkedElem(node.data))
+                            new_inner_list[hashed_key] \
+                                = LinkedList(LinkedElem(node.key, node.value))
             self._inner_list = new_inner_list
 
     def __delitem__(self, key):
         hashed_key = hash(key) % self._capacity
-        value = self[key]
         if self._inner_list[hashed_key] is not None:
-            self._inner_list[hashed_key].del_first_by_value([key, value])
+            self._inner_list[hashed_key].del_first_by_key(key)
             self._size -= 1
 
         if self._size <= 0.3 * self._capacity:  # list shortening less than 30% is filled
@@ -67,12 +68,16 @@ class HashMap:
             for elem in self._inner_list:
                 if elem is not None:
                     for node in elem:
-                        hashed_key = hash(node.data[0]) % self._capacity
+                        hashed_key = hash(node.key) % self._capacity
                         if new_inner_list[hashed_key] is not None:
-                            new_inner_list[hashed_key].add_data(node.data)
+                            new_inner_list[hashed_key].add_data(node.key, node.value)
                         else:
-                            new_inner_list[hashed_key] = LinkedList(LinkedElem(node.data))
+                            new_inner_list[hashed_key] \
+                                = LinkedList(LinkedElem(node.key, node.value))
             self._inner_list = new_inner_list
+
+    def __len__(self):
+        return self._size
 
     def __iter__(self):
         for elem in self._inner_list:
@@ -84,7 +89,7 @@ class HashMap:
         for elem in self._inner_list:
             if elem is not None:
                 for node in elem:
-                    string += f'{node.data[0]}:{node.data[1]}; '  # key, value
+                    string += f'{node.key}:{node.value}; '  # key, value
         string = '{  ' if string == '{' else string
         return string[:-2] + '}'
 
@@ -93,7 +98,7 @@ class HashMap:
         Sorts hash map by values
         :return: sorted list
         """
-        return sorted(self, key=lambda el: el.data[1], reverse=reverse)
+        return sorted(self, key=lambda el: el.value, reverse=reverse)
 
     def get(self, key, default=None):
         """
@@ -116,13 +121,10 @@ class HashMap:
         for elem in self._inner_list:
             if elem is not None:
                 for node in elem:
-                    string += f'{node.data[0]}:{node.data[1]} -> '
+                    string += f'{node.key}:{node.value} -> '
                 string = string[:-4]
             string += '\n'
         return string
-
-    def __len__(self):
-        return self._size
 
     def get_capacity(self):
         """
@@ -131,7 +133,7 @@ class HashMap:
         """
         return self._capacity
 
-    def write_in_file(self, filename):
+    def write_in_line(self, filename):
         """
         Writes hash map in file in a pretty way
         :return: None
@@ -139,7 +141,7 @@ class HashMap:
         with open(filename, 'a', encoding='utf8') as file:
             file.write('{')
             for elem in self:
-                file.write(f'{elem.data[0]}:{elem.data[1]}; ')
+                file.write(f'{elem.key}:{elem.value}; ')
             file.write('}\n')
 
 

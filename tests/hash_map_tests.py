@@ -3,7 +3,7 @@ Module for testing hash map data structure
 """
 import unittest
 from map_tests import MapTesting
-from src.hash_map import HashMap
+from src.maps.hash_map import HashMap
 
 
 class HashMapTesting(MapTesting, unittest.TestCase):
