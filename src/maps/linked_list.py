@@ -56,13 +56,13 @@ class LinkedList:
             res = self.iter
             iter_next = self.iter.next_
             self.iter = iter_next
-            return res
+            return res.key, res.value
         raise StopIteration
 
     def __str__(self):
         string_out = ''
-        for node in self:
-            string_out += f'({node.key}, {node.value})' + ' -> '
+        for key, value in self:
+            string_out += f'({key}, {value})' + ' -> '
         return string_out[:-4]
 
     def input_data(self):
@@ -88,6 +88,20 @@ class LinkedList:
         """
         self.tail.next_ = LinkedElem(new_key, new_value)
         self.tail = self.tail.next_
+
+    def set_data(self, key, new_data):
+        """
+        Sets new value to the node
+        :param key: key
+        :param new_data: new value
+        :return: None
+        """
+        current = self.head
+        while current is not None and current.key != key:
+            current = current.next_
+        if current is None:
+            raise KeyError("Such key doesn't exist")
+        current.value = new_data
 
     def print_list(self):
         """
