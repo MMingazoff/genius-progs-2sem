@@ -1,16 +1,15 @@
 """
 Module for testing binary tree map data structure
 """
-import unittest
 from map_tests import MapTesting
 from src.maps.tree_map import TreeMap
 
 
-class BinaryTreeTesting(MapTesting, unittest.TestCase):
+class BinaryTreeTesting(MapTesting):
     """
     Class for testing binary tree map methods
     """
-    map_cls = TreeMap
+    type2test = TreeMap
 
     def test_less_in_left(self):
         """
@@ -84,6 +83,23 @@ class BinaryTreeTesting(MapTesting, unittest.TestCase):
         self.assertEqual(self.map.root.left.right.value, 'left->right')
         self.assertIs(self.map.root.left.right.left, None)
 
-
-if __name__ == '__main__':
-    unittest.main()
+    def test_del_root(self):
+        """
+        Checks deletion of root with no, one and 2 children
+        :return: None
+        """
+        self.map[1] = 'root'
+        del self.map[1]
+        self.assertEqual(self.map.root, None)
+        self.map = self.type2test()
+        self.map[1] = 'root'
+        self.map[2] = 'right'
+        del self.map[1]
+        self.assertEqual(self.map.root.value, 'right')
+        self.map = self.type2test()
+        self.map[1] = 'root'
+        self.map[2] = 'right'
+        self.map[0] = 'left'
+        del self.map[1]
+        self.assertEqual(self.map.root.value, 'right')
+        self.assertEqual(self.map.root.left.value, 'left')

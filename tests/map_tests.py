@@ -1,22 +1,22 @@
 """
 Module for testing map data structures
 """
-import unittest
+from test import mapping_tests
 from abc import ABC
 
 
-class MapTesting(ABC, unittest.TestCase):
+class MapTesting(ABC, mapping_tests.BasicTestMappingProtocol):
     """
     Abstract class with basic tests for maps
     """
-    map_cls = ABC
+    type2test = ABC
 
     def setUp(self):
         """
         Makes a map class instance
         :return: None
         """
-        self.map = self.map_cls()
+        self.map = self.type2test()
 
     def test_set_get_item(self):
         """
