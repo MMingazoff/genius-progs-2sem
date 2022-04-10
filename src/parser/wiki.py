@@ -11,6 +11,10 @@ from typing import List
 from bs4 import BeautifulSoup
 from src.maps.hash_map import HashMap
 
+ARTICLES_DIRECTORY = 'C:\\Users\\minga\\PycharmProjects\\Maps\\articles'
+WIKI = "https://ru.wikipedia.org/wiki/Special:Random"
+WIKI_DOMAIN = "https://ru.wikipedia.org"
+
 
 def count_words(html_txt: str, hash_map: HashMap) -> HashMap:
     """
@@ -25,8 +29,8 @@ def count_words(html_txt: str, hash_map: HashMap) -> HashMap:
     splitters = (r'\s', r'\.', r'\!', r'\?', r',', r';',
                  r'править \| править код',
                  r'\[', r'\]', r'\(', r'\)', r'\n', r'\\', r'\|')
-    splitters = r'|'.join(splitters)
-    words = re.split(splitters, main_txt.get_text())  # \s|\[|\]|,|;|\.|\(|\)|\n|\\|
+    splitters = r'|'.join(splitters)  # by this, strings words will be split
+    words = re.split(splitters, main_txt.get_text())
     for word in words:
         if word != '' and word.isalpha():  # to count numbers, isalpha should be changed to isalnum
             lower_word = word.lower()
@@ -122,18 +126,18 @@ def wiki_parser(_url: str, base_path: str) -> List[str]:
     4) сериализует мапу в текcтовый файл words.txt в папке
     5) из контента вытаскивает ссылки, фильтрует оставляя только ссылки на викиепедию
        и возвращает список
-    :param _url:
-    :param base_path:
-    :return:
+    :param _url: url to the article
+    :param base_path: path where to write files with content etc.
+    :return: list with found wiki urls
     """
-    with urlopen(_url) as response:
+    with urlopen(_url) as response:  # gets html binary code and url of a random article
         content = response.read()
         curr_url = response.geturl()
 
-    current_path = ''
+    current_path = ''  # path to new(or not if exists) folder
 
     folder_exists = False
-    for folder in os.listdir(base_path):
+    for folder in os.listdir(base_path):  # checks if such url already exists
         if folder_exists:
             break
         with open(os.path.join(base_path, folder, 'url.txt'), 'r', encoding='utf8') as file:
@@ -142,29 +146,28 @@ def wiki_parser(_url: str, base_path: str) -> List[str]:
                 folder_exists = True
                 current_path = os.path.join(base_path, folder)
 
-    if not folder_exists:
+    if not folder_exists:  # if url is new, file with it is written
         new_folder = uuid.uuid4().hex
         current_path = os.path.join(base_path, new_folder)
         os.mkdir(current_path)
         with open(os.path.join(current_path, 'url.txt'), 'w', encoding='utf8') as file:
             file.write(curr_url)
 
+    # if content of url doesn't exist it will be written
     if not os.path.exists(os.path.join(current_path, 'content.txt')):
         with open(os.path.join(current_path, 'content.txt'), 'wb') as file:
             file.write(content)
 
     hash_map = HashMap()
 
+    # reads the content of url
     with open(os.path.join(current_path, 'content.txt'), 'r', encoding='utf8') as file:
         html = file.read()
 
     count_words(html, hash_map)
-    hash_map.write(os.path.join(current_path, 'words.txt'))
-    return get_urls(html)
+    hash_map.write(os.path.join(current_path, 'words.txt'))  # writes all calculated words in file
+    return get_urls(html)  # gets urls from article
 
 
 if __name__ == '__main__':
-    ARTICLES_DIRECTORY = 'C:\\Users\\minga\\PycharmProjects\\Maps\\articles'
-    WIKI = "https://ru.wikipedia.org/wiki/Special:Random"
-    WIKI_DOMAIN = "https://ru.wikipedia.org"
     print(wiki_parser(WIKI, ARTICLES_DIRECTORY))
