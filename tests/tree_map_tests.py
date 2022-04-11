@@ -3,9 +3,10 @@ Module for testing binary tree map data structure
 """
 from map_tests import MapTesting
 from src.maps.tree_map import TreeMap
+from tests.overriden_tests import GeneralMappingTests
 
 
-class BinaryTreeTesting(MapTesting):
+class BinaryTreeTesting(GeneralMappingTests, MapTesting):
     """
     Class for testing binary tree map methods
     """

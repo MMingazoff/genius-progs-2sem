@@ -1,8 +1,14 @@
+"""
+Module to make maps data structures properly
+"""
 from abc import ABC, abstractmethod
 from typing import Iterable, Tuple
 
 
 class BaseMap(ABC):
+    """
+    Class for maps with abstract methods and some universal method for all maps
+    """
     @abstractmethod
     def __getitem__(self, key: str) -> int:
         ...
@@ -103,10 +109,8 @@ class BaseMap(ABC):
     def setdefault(self, key, default=None):
         if key in self:
             return self[key]
-        else:
-            self[key] = default
-            return default
-
+        self[key] = default
+        return default
 
     @abstractmethod
     def clear(self): ...
