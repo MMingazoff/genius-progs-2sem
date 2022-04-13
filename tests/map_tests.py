@@ -75,10 +75,6 @@ class MapTesting(ABC, mapping_tests.BasicTestMappingProtocol):
             line = file.readline()
             while line != '':
                 key, value = line.split()
-                key = int(key[:-1])
+                key = int(key)
                 self.assertEqual(value, self.map[key])
                 line = file.readline()
-
-
-if __name__ == '__main__':
-    pass

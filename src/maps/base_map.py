@@ -118,7 +118,7 @@ class BaseMap(ABC):
     def write(self, path: str, mode='a') -> None:
         with open(path, mode, encoding='utf8') as file:
             for key, value in self:
-                file.write(f'{key}, {value}\n')
+                file.write(f'{key} {value}\n')
 
     @classmethod
     def read(cls, path: str) -> 'BaseMap':
