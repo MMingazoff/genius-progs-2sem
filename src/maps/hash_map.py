@@ -81,7 +81,7 @@ class HashMap(BaseMap):
     def __iter__(self):
         for elem in self._inner_list:
             if elem is not None:
-                yield from elem
+                yield from elem or []
 
     def __str__(self):
         string = ', '.join(f'{key}: {value}' for key, value in self)
