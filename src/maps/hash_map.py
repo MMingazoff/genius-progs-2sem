@@ -5,8 +5,8 @@ Based on default list but key is calculated according to
 key's hash value
 """
 from random import randint  # for tests
-from src.maps.linked_list import LinkedElem, LinkedList
-from src.maps.base_map import BaseMap
+from maps.linked_list import LinkedElem, LinkedList
+from maps.base_map import BaseMap
 
 
 class HashMap(BaseMap):
@@ -84,24 +84,23 @@ class HashMap(BaseMap):
                 yield from elem
 
     def __str__(self):
-        string = '{'
-        for elem in self._inner_list:
-            if elem is not None:
-                for key, value in elem:
-                    string += f'{key}:{value}; '  # key, value
-        string = '{  ' if string == '{' else string
-        return string[:-2] + '}'
+        string = ', '.join(f'{key}: {value}' for key, value in self)
+        return '{' + string + '}'
 
     __repr__ = __str__
 
+    def __len__(self) -> int:
+        return self._size
+
     def sort(self, reverse=False):
         """
-        Sorts hash map by values
+        Sorts hash map by keys
         :return: sorted list
         """
-        return sorted(self, key=lambda el: el.value, reverse=reverse)
+        return sorted(self, key=lambda elem: elem[0], reverse=reverse)
 
     def clear(self):
+        """Clears hash map"""
         self._capacity = 10
         self._inner_list = [None] * self._capacity
         self._size = 0
@@ -111,13 +110,8 @@ class HashMap(BaseMap):
         Method that serializes hash map's data
         :return: string
         """
-        string = ''
-        for elem in self._inner_list:
-            if elem is not None:
-                for key, value in elem:
-                    string += f'{key}:{value} -> '
-                string = string[:-4]
-            string += '\n'
+        string = '\n'.join(' -> '.join(f'{key}:{value}' for key, value in elem)
+                           for elem in self._inner_list if elem is not None)
         return string
 
     def get_capacity(self):
@@ -133,20 +127,12 @@ class HashMap(BaseMap):
         :return: None
         """
         with open(filename, 'a', encoding='utf8') as file:
-            file.write('{')
-            for key, value in self:
-                file.write(f'{key}:{value}; ')
-            file.write('}\n')
+            file.write(str(self))
 
 
 if __name__ == '__main__':
     hash_map = HashMap()
     for el in 'abcdefghijk':
         hash_map[el] = randint(1, 100)
-    new_hash = set(list(iter(hash_map)))
-    new_hash2 = set(list(hash_map))
-    print(new_hash)
-    print(new_hash2)
-    dct = {"1": "2", "key1":"value1", "key2":(1,2,3)}
-    print(list(iter(dct)))
-    # set(x) == set(lst) == set(ref)
+    print(hash_map)
+    print(hash_map.to_string())

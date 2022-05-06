@@ -73,7 +73,7 @@ class MapTesting(ABC, mapping_tests.BasicTestMappingProtocol):
         self.map.write(filepath, 'w')
         with open(filepath, 'r', encoding='utf8') as file:
             line = file.readline()
-            while line != '':
+            while line:
                 key, value = line.split()
                 key = int(key)
                 self.assertEqual(value, self.map[key])

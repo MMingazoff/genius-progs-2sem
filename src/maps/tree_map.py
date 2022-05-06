@@ -3,7 +3,7 @@ Binary Search Tree.
 Node keys on the left are less than the key of a parent node.
 Node keys on the right are less than the key of a parent node.
 """
-from src.maps.base_map import BaseMap
+from maps.base_map import BaseMap
 
 
 class Node:
@@ -115,6 +115,7 @@ class TreeMap(BaseMap):
         yield from iter_node(self.root)
 
     def clear(self):
+        """Clears tree map"""
         self.root = None
         self._size = 0
 
@@ -126,16 +127,13 @@ class TreeMap(BaseMap):
 
     __repr__ = __str__
 
+    def __len__(self) -> int:
+        return self._size
+
 
 if __name__ == '__main__':
     tree = TreeMap()
-    tree[10] = 'root'
-    # tree[7] = 'left'
-    # tree[12] = 'right'
-    # tree[9] = 'left->right'
-    # tree[8] = 'left->right->left'
-    # tree[6] = 'left->left'
+    tree['root'] = 10
     print(list(tree.values()))
-    # del tree[9]
-    del tree[10]
-    print(tree)
+    del tree['root']
+    print(list(tree.values()))

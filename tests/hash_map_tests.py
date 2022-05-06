@@ -2,7 +2,7 @@
 Module for testing hash map data structure
 """
 from map_tests import MapTesting
-from src.maps.hash_map import HashMap
+from maps.hash_map import HashMap
 from tests.overriden_tests import GeneralMappingTests
 
 

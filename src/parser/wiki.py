@@ -1,18 +1,23 @@
 """
-This code parses random wikipedia article.
+This code parses random wikipedia article and:
 1. Counts how many times each word appears in the article.
 2. In text finds links to other wikipedia articles and does (1.) with each.
 """
 import re
 import os
-import uuid
+import time
+import shutil
 from urllib.request import urlopen
-from typing import List
+from urllib.parse import unquote
+from concurrent.futures import ThreadPoolExecutor
+from multiprocessing import Pool
+from typing import List, Union
 from bs4 import BeautifulSoup
-from src.maps.hash_map import HashMap
+from src.parser.file_funcs import list_writer, files_merge
+from maps.hash_map import HashMap
 
-ARTICLES_DIRECTORY = 'C:\\Users\\minga\\PycharmProjects\\Maps\\articles'
-WIKI = "https://ru.wikipedia.org/wiki/Special:Random"
+ARTICLES_DIRECTORY = 'C:/Users/minga/PycharmProjects/Maps/articles'
+WIKI_RANDOM = "https://ru.wikipedia.org/wiki/Special:Random"
 WIKI_DOMAIN = "https://ru.wikipedia.org"
 
 
@@ -56,118 +61,138 @@ def get_urls(html_txt: str, max_urls=-1) -> list:
                 urls += 1
             url_set.add(WIKI_DOMAIN + article_link)
             if urls >= max_urls >= 0:
-                return url_set
+                return list(url_set)
     return list(url_set)
 
 
-def get_html(_url: str) -> str:
-    """
-    Gets html code of website
-    :param _url: link
-    :return: decoded html
-    """
-    with urlopen(_url) as response:
-        # print(response.geturl())
-        response_bytes = response.read()
-        return response_bytes.decode("utf8")
-
-
-def write_html(_url: str, path: str) -> None:
-    """
-    Writes binary file
-    :param _url: url to the article
-    :param path: directory where to write
-    :return: None
-    """
-    with open(os.path.join(path, 'content.txt'), 'wb') as file:
-        with urlopen(_url) as response:
-            file.write(response.read())
-
-
-def counted_words_sum(words: [list, HashMap]) -> int:
-    """
-    Calculates how many words were counted
-    :param words: iterables that yield LinkedElems which data consists of [word, quantity]
-    :return: total number of words in article (with repeats)
-    """
-    total = 0
-    for word in words:
-        total += word.data[1]
-    return total
-
-
-def url_is_valid(_url: str) -> bool:
+def url_is_valid(url: str) -> bool:
     """
     Checks if URL leads to other wikipedia article
-    :param _url: url
+    :param url: url
     :return: true if url is valid / false if not
     """
-    if not _url.startswith('/wiki/'):
+    black_list = ['gif', 'jpg', 'svg', 'png', 'ogg']
+    if not url.startswith('/wiki/'):
         return False
-    black_list = ['gif', 'jpg', 'svg']
-    if _url[-3:len(_url)] in black_list:
+    if url[-3:len(url)].lower() in black_list:
         return False
-    if 'Edit' in _url:
+    if ':' in url or 'Edit' in url or url.endswith('#identifiers'):
         return False
     return True
 
 
-def wiki_parser(_url: str, base_path: str) -> List[str]:
+def multi_parsing(url: str, mode: Union[ThreadPoolExecutor, Pool], depth: int = 1):
     """
-    0) пробегается по директориям в base_path, сравнивает содержимое файла url.txt
-     с параметром url. Если такая найдена то сразу переходим в пункт 2)
-    1) в директории по пути base_path создает папку
-        со случайно сгенерированным именем. Для генерации можно использовать
-        import uuid
-        dirname = uuid.uuid4().hex
-    2) если папка существовала и в ней уже есть файл content с контентом страницы то её читает
-       иначе загружает и записывает в бинарный файл content всё содержимое страницы
-    3) из контента вытаскивает текст, считает слова с помощью Map
-    4) сериализует мапу в текcтовый файл words.txt в папке
-    5) из контента вытаскивает ссылки, фильтрует оставляя только ссылки на викиепедию
-       и возвращает список
-    :param _url: url to the article
+    :(
+    :param url:
+    :param mode:
+    :param depth:
+    :return:
+    """
+    curr_urls = [url]
+    for curr_depth in range(depth+1):
+        if curr_depth != 0:
+            curr_urls = [new_url for urls in curr_urls for new_url in urls]
+        # print(len(curr_urls), curr_urls)
+        with mode(32) as executor:
+            curr_urls = executor.map(wiki_parser, curr_urls)
+
+
+def wiki_parser(url: str, base_path=ARTICLES_DIRECTORY) -> List[str]:
+    """
+    1) Gets article heading from url
+    2) If the folder with such heading, url, content, words files exist,
+    reads content and returns urls from content, else goes next
+    3) Sends request, gets page's content and url
+    4) If folder doesn't exist, function makes directory (its name's heading) and writes in url
+    5) If content file doesn't exist it will be written in binary file
+    6) If words file doesn't exist, words will be counted (in alphabetic order) and written
+    7) Gets urls from content (firstly it's being decoded) and returns them
+
+    :param url: url to the article
     :param base_path: path where to write files with content etc.
     :return: list with found wiki urls
     """
-    with urlopen(_url) as response:  # gets html binary code and url of a random article
+
+    heading = unquote(url).replace('_', ' ').split('/wiki/')[-1]
+
+    # checks if the article's folder already exists
+    folder_exists = heading in os.listdir(base_path)
+    current_path = os.path.join(base_path, heading)
+
+    url_path = os.path.join(current_path, 'url.txt')
+    content_path = os.path.join(current_path, 'content.txt')
+    words_path = os.path.join(current_path, 'words.txt')
+
+    if folder_exists and os.path.exists(url_path) \
+            and os.path.exists(content_path) and os.path.exists(words_path):
+        with open(content_path, 'r', encoding='utf8') as file:
+            html = file.read()
+        return get_urls(html)
+
+    with urlopen(url) as response:
         content = response.read()
         curr_url = response.geturl()
 
-    current_path = ''  # path to new(or not if exists) folder
+    html = content.decode()
+    # print(curr_url)
 
-    folder_exists = False
-    for folder in os.listdir(base_path):  # checks if such url already exists
-        if folder_exists:
-            break
-        with open(os.path.join(base_path, folder, 'url.txt'), 'r', encoding='utf8') as file:
-            line = file.readline()
-            if line == curr_url:
-                folder_exists = True
-                current_path = os.path.join(base_path, folder)
-
-    if not folder_exists:  # if url is new, file with it is written
-        new_folder = uuid.uuid4().hex
-        current_path = os.path.join(base_path, new_folder)
-        os.mkdir(current_path)
-        with open(os.path.join(current_path, 'url.txt'), 'w', encoding='utf8') as file:
+    # if url is new, file with it is written
+    if not folder_exists:
+        try:
+            os.mkdir(current_path)
+        except FileExistsError:
+            print("error")
+            return []
+        with open(url_path, 'w', encoding='utf8') as file:
             file.write(curr_url)
 
     # if content of url doesn't exist it will be written
-    if not os.path.exists(os.path.join(current_path, 'content.txt')):
-        with open(os.path.join(current_path, 'content.txt'), 'wb') as file:
+    if not os.path.exists(content_path):
+        with open(content_path, 'wb') as file:
             file.write(content)
 
-    hash_map = HashMap()
+    # if words weren't counted than count
+    if not os.path.exists(words_path):
+        hash_map = HashMap()
+        count_words(html, hash_map)
+        list_writer(hash_map.sort(), words_path)  # writes all calculated words in file
 
-    # reads the content of url
-    with open(os.path.join(current_path, 'content.txt'), 'r', encoding='utf8') as file:
-        html = file.read()
-
-    count_words(html, hash_map)
-    hash_map.write(os.path.join(current_path, 'words.txt'))  # writes all calculated words in file
-    return get_urls(html)  # gets urls from article
+    # gets urls from article
+    return get_urls(html)
 
 
 if __name__ == '__main__':
-    print(wiki_parser(WIKI, ARTICLES_DIRECTORY))
+    TEST_URL = "https://ru.wikipedia.org/wiki/%D0%90%D0%B1%D1%83_" \
+               "%D0%97%D0%B0%D0%BA%D0%B0%D1%80%D0%B8%D1%8F_" \
+               "%D0%AF%D1%85%D1%8C%D1%8F_II_%D0%B0%D0%BB%D1%8C" \
+               "-%D0%92%D0%B0%D1%82%D0%B8%D0%BA"
+
+    print('Parsing using multithreading')
+    start = time.time()
+    multi_parsing(TEST_URL, ThreadPoolExecutor, depth=1)
+    print(time.time() - start)
+
+    shutil.rmtree(ARTICLES_DIRECTORY)
+    os.mkdir(ARTICLES_DIRECTORY)
+
+    print('Parsing using multiprocessing')
+    start = time.time()
+    multi_parsing(TEST_URL, Pool, depth=1)
+    print(time.time() - start)
+
+    shutil.rmtree(ARTICLES_DIRECTORY)
+    os.mkdir(ARTICLES_DIRECTORY)
+
+    print('Parsing coherently')
+    start = time.time()
+    for _url in wiki_parser(TEST_URL):
+        wiki_parser(_url)
+    print(time.time() - start)
+
+    print('Merging')
+    start = time.time()
+    files_merge(*(f'{ARTICLES_DIRECTORY}/{folder}/words.txt'
+                  for folder in os.listdir(ARTICLES_DIRECTORY)),
+                result_path='res.txt')
+    print(time.time() - start)
