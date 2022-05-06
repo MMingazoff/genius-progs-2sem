@@ -129,7 +129,6 @@ class BaseMap(ABC):
     @abstractmethod
     def clear(self):
         """Clears map"""
-        ...
 
     def write(self, path: str, mode='a') -> None:
         """Writes map in a file"""
