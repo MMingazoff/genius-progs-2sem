@@ -1,5 +1,11 @@
+"""
+Module to work with files
+"""
+
+
 def file_reader(filename: str):
-    with open(filename, 'r') as file:
+    """Generator that reads lines in file"""
+    with open(filename, 'r', encoding='utf8') as file:
         line = file.readline()
         while line:
             yield line
@@ -7,12 +13,14 @@ def file_reader(filename: str):
 
 
 def list_writer(list_to_write: list, filename: str):
+    """Function that writes in file the list made from map"""
     with open(filename, 'w', encoding='utf8') as file:
         for key, value in list_to_write:
             file.write(f'{key} {value}\n')
 
 
 def word_counter(words_list: list, word: str) -> int:
+    """Counts how many words are met in words list"""
     result = 0
     for line in words_list:
         if not line:
@@ -25,27 +33,26 @@ def word_counter(words_list: list, word: str) -> int:
 
 def files_merge(*filenames: str, result_path: str):
     """
-    sad
-    :param filenames:
-    :param result_path:
-    :return:
+    Merges multiple files in one
+    :param filenames: iterable with filenames
+    :param result_path: file where to put the result
+    :return: None
     """
-    with open(result_path, 'w') as result_file:
+    with open(result_path, 'w', encoding='utf8') as result_file:
         file_readers = [file_reader(filename) for filename in filenames]
         lines = [next(reader, None) for reader in file_readers]
         while any(lines):
             non_none_words = [word for word in lines if word]
-            min_word_line = min(non_none_words, key=lambda line: line.split()[0])
+            min_word_line = min(non_none_words, key=lambda _line: _line.split()[0])
             min_word = min_word_line.split()[0]
             # if word is met multiple times
             if word_counter(lines, min_word) > 1:
                 next_indexes = []
                 result_word_count = 0
-                for line_index in range(len(lines)):
-                    read_line = lines[line_index]
-                    if not read_line:
+                for line_index, line in enumerate(lines):
+                    if not line:
                         continue
-                    word, num = read_line.split()
+                    word, num = line.split()
                     if word == min_word:
                         result_word_count += int(num)
                         next_indexes.append(line_index)
