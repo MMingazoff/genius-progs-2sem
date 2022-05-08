@@ -1,7 +1,7 @@
 """
 Module for testing binary tree map data structure
 """
-from map_tests import MapTesting
+from tests.map_tests import MapTesting
 from maps.tree_map import TreeMap
 from tests.overriden_tests import GeneralMappingTests
 
@@ -92,12 +92,11 @@ class BinaryTreeTesting(GeneralMappingTests, MapTesting):
         self.map[1] = 'root'
         del self.map[1]
         self.assertEqual(self.map.root, None)
-        self.map = self.type2test()
         self.map[1] = 'root'
         self.map[2] = 'right'
         del self.map[1]
         self.assertEqual(self.map.root.value, 'right')
-        self.map = self.type2test()
+        del self.map[2]
         self.map[1] = 'root'
         self.map[2] = 'right'
         self.map[0] = 'left'
