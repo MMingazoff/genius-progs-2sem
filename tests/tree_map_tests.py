@@ -2,8 +2,8 @@
 Module for testing binary tree map data structure
 """
 from tests.map_tests import MapTesting
-from maps.tree_map import TreeMap
 from tests.overriden_tests import GeneralMappingTests
+from maps.tree_map import TreeMap
 
 
 class BinaryTreeTesting(GeneralMappingTests, MapTesting):
