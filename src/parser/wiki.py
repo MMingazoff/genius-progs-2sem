@@ -16,7 +16,7 @@ from bs4 import BeautifulSoup
 from src.parser.file_funcs import list_writer, files_merge
 from maps.hash_map import HashMap
 
-ARTICLES_DIRECTORY = 'C:/Users/minga/PycharmProjects/Maps/articles'
+ARTICLES_DIRECTORY = os.path.abspath('../../articles')  # where to write articles data
 WIKI_RANDOM = "https://ru.wikipedia.org/wiki/Special:Random"
 WIKI_DOMAIN = "https://ru.wikipedia.org"
 
@@ -27,7 +27,7 @@ def count_words(html_txt: str, hash_map: HashMap) -> HashMap:
     Hashmap is used to count words. Key is a word and value is number of the word in article
     :param html_txt: html text of wiki article
     :param hash_map: hash map to write results
-    :return: hashmap with (key, value) -> (word, word quantity)
+    :return: hashmap (key, value = word, word quantity)
     """
     soup = BeautifulSoup(html_txt, 'html.parser')
     main_txt = soup.find(id="mw-content-text").div
@@ -163,32 +163,25 @@ def wiki_parser(url: str, base_path=ARTICLES_DIRECTORY) -> List[str]:
 
 
 if __name__ == '__main__':
-    TEST_URL = "https://ru.wikipedia.org/wiki/%D0%90%D0%B1%D1%83_" \
-               "%D0%97%D0%B0%D0%BA%D0%B0%D1%80%D0%B8%D1%8F_" \
-               "%D0%AF%D1%85%D1%8C%D1%8F_II_%D0%B0%D0%BB%D1%8C" \
-               "-%D0%92%D0%B0%D1%82%D0%B8%D0%BA"
+    shutil.rmtree(ARTICLES_DIRECTORY)
+    os.mkdir(ARTICLES_DIRECTORY)
 
     print('Parsing using multithreading')
     start = time.time()
-    multi_parsing(TEST_URL, ThreadPoolExecutor, depth=1)
+    multi_parsing(WIKI_RANDOM, ThreadPoolExecutor, depth=1)
     print(time.time() - start)
+
+    print(len(os.listdir(ARTICLES_DIRECTORY)))
 
     shutil.rmtree(ARTICLES_DIRECTORY)
     os.mkdir(ARTICLES_DIRECTORY)
 
     print('Parsing using multiprocessing')
     start = time.time()
-    multi_parsing(TEST_URL, Pool, depth=1)
+    multi_parsing(WIKI_RANDOM, Pool, depth=1)
     print(time.time() - start)
 
-    shutil.rmtree(ARTICLES_DIRECTORY)
-    os.mkdir(ARTICLES_DIRECTORY)
-
-    print('Parsing coherently')
-    start = time.time()
-    for _url in wiki_parser(TEST_URL):
-        wiki_parser(_url)
-    print(time.time() - start)
+    print(len(os.listdir(ARTICLES_DIRECTORY)))
 
     print('Merging')
     start = time.time()
