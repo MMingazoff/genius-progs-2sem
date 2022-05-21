@@ -81,19 +81,17 @@ def url_is_valid(url: str) -> bool:
     return True
 
 
-def multi_parsing(url: str, mode: Union[ThreadPoolExecutor, Pool], depth: int = 1):
+def multi_parsing(url: str, mode: Union[ThreadPoolExecutor, Pool], depth: int = 0):
     """
-    :(
-    :param url:
-    :param mode:
-    :param depth:
-    :return:
+    Parses articles from base articles (found links) and can be repeated multiple times
+    :param url: url to base article
+    :param mode: multi[threading|processing]
+    :param depth: depth of parsing
+    :return: None
     """
-    curr_urls = [url]
-    for curr_depth in range(depth+1):
-        if curr_depth != 0:
-            curr_urls = [new_url for urls in curr_urls for new_url in urls]
-        # print(len(curr_urls), curr_urls)
+    curr_urls = [[url]]
+    for _ in range(depth+1):
+        curr_urls = [new_url for urls in curr_urls for new_url in urls]
         with mode(32) as executor:
             curr_urls = executor.map(wiki_parser, curr_urls)
 
@@ -113,8 +111,19 @@ def wiki_parser(url: str, base_path=ARTICLES_DIRECTORY) -> List[str]:
     :param base_path: path where to write files with content etc.
     :return: list with found wiki urls
     """
+    heading = unquote(url).split('/wiki/')[-1].replace('_', ' ')
 
-    heading = unquote(url).replace('_', ' ').split('/wiki/')[-1]
+    # checks if url leads to random article
+    is_random = False
+    if heading == 'Special:Random':
+        is_random = True
+        with urlopen(url) as response:
+            curr_url = response.geturl()
+            print(curr_url)
+            heading = unquote(curr_url).replace('_', ' ').split('/wiki/')[-1]
+            content = response.read()
+
+    heading = heading.replace('?', '(q.mark)')
 
     # checks if the article's folder already exists
     folder_exists = heading in os.listdir(base_path)
@@ -130,19 +139,19 @@ def wiki_parser(url: str, base_path=ARTICLES_DIRECTORY) -> List[str]:
             html = file.read()
         return get_urls(html)
 
-    with urlopen(url) as response:
-        content = response.read()
-        curr_url = response.geturl()
+    if not is_random:
+        with urlopen(url) as response:
+            content = response.read()
+            curr_url = response.geturl()
 
     html = content.decode()
-    # print(curr_url)
 
     # if url is new, file with it is written
     if not folder_exists:
         try:
             os.mkdir(current_path)
         except FileExistsError:
-            print("error")
+            # if such exception occurred than another thread/process is handling this task
             return []
         with open(url_path, 'w', encoding='utf8') as file:
             file.write(curr_url)
