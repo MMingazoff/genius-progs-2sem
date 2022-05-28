@@ -1,16 +1,16 @@
 """
 Module for testing hash map data structure
 """
-import unittest
-from map_tests import MapTesting
-from src.hash_map import HashMap
+from tests.map_tests import MapTesting
+from tests.overriden_tests import GeneralMappingTests
+from maps.hash_map import HashMap
 
 
-class HashMapTesting(MapTesting, unittest.TestCase):
+class HashMapTesting(GeneralMappingTests, MapTesting):
     """
     Class for testing hash map methods
     """
-    map_cls = HashMap
+    type2test = HashMap
 
     def test_deletion(self):
         """
@@ -52,7 +52,7 @@ class HashMapTesting(MapTesting, unittest.TestCase):
 
     def test_same_size_when_rewritten(self):
         """
-        Checks if size (number of elements) doesn't change
+        Checks if _size (number of elements) doesn't change
         when element's value is rewritten
         :return: None
         """
@@ -63,6 +63,14 @@ class HashMapTesting(MapTesting, unittest.TestCase):
         new_size = len(self.map)
         self.assertEqual(old_size, new_size)
 
-
-if __name__ == '__main__':
-    unittest.main()
+    def test_get(self):
+        """
+        Checks if method get works properly.
+        Returns value if key exists/ default if key doesn't exist
+        :return: None
+        """
+        self.map[1] = 2
+        check_has = self.map.get(1, 0)
+        check_no = self.map.get(2, 0)
+        self.assertEqual(check_has, 2)
+        self.assertEqual(check_no, 0)

@@ -3,6 +3,7 @@ Binary Search Tree.
 Node keys on the left are less than the key of a parent node.
 Node keys on the right are less than the key of a parent node.
 """
+from maps.base_map import BaseMap
 
 
 class Node:
@@ -25,12 +26,13 @@ class Node:
         return self.key
 
 
-class TreeMap:
+class TreeMap(BaseMap):
     """
     Binary Search Tree class
     """
     def __init__(self, root=None):
         self.root = root
+        self._size = 0
 
     def __setitem__(self, key, value):
         def set_node(node):
@@ -46,11 +48,13 @@ class TreeMap:
                     set_node(node.left)
             elif key == node.key:
                 node.value = value
+                self._size -= 1
 
         if self.root is None:
             self.root = Node(key, value)
         else:
             set_node(self.root)
+        self._size += 1
 
     def __getitem__(self, key):
         def get_node(node):
@@ -73,18 +77,17 @@ class TreeMap:
                 del_node(node.left, key_, node)
             else:  # key == node.key
                 if node.right is None and node.left is None:  # node has no children
-                    if prev_node.right is node:  # "node to be deleted" is on the right
-                        prev_node.right = None
-                    elif prev_node.left is node:  # "node to be deleted is on the left
-                        prev_node.left = None
-                    del node
+                    if prev_node is not None:
+                        if prev_node.right is node:  # "node to be deleted" is on the right
+                            prev_node.right = None
+                        elif prev_node.left is node:  # "node to be deleted is on the left
+                            prev_node.left = None
                 elif node.right is None or node.left is None:  # node has one child
                     child = node.right if node.right is not None else node.left
-                    if prev_node.right is node:  # "node to be deleted" is on the right
-                        prev_node.right = child
-                    elif prev_node.left is node:  # "node to be deleted" is on the left
-                        prev_node.left = child
-                    del node
+                    node.key = child.key
+                    node.value = child.value
+                    node.right = child.right
+                    node.left = child.left
                 else:  # node has both children (left and right)
                     curr = node.right
                     prev = node
@@ -96,26 +99,41 @@ class TreeMap:
                     node.value = curr.value
                     del_node(curr, curr.key, prev)  # del node with the least key in the right tree
 
-        if self.root is not None and self.root.right is None and self.root.left is None:
-            del self.root
+        if self.root is not None and self.root.right is None and self.root.right is None:
             self.root = None
-        del_node(self.root, key)
+        else:
+            del_node(self.root, key)
+        self._size -= 1
+
+    def __iter__(self):
+        def iter_node(node):
+            if node is not None:
+                yield node.key, node.value
+                yield from iter_node(node.left)
+                yield from iter_node(node.right)
+
+        yield from iter_node(self.root)
+
+    def clear(self):
+        """Clears tree map"""
+        self.root = None
+        self._size = 0
+
+    def __str__(self):
+        output = ''
+        for key, value in self:
+            output += f'({key} , {value})\n'
+        return output
+
+    __repr__ = __str__
+
+    def __len__(self) -> int:
+        return self._size
 
 
 if __name__ == '__main__':
     tree = TreeMap()
-    # tree[13] = 'second'
-    # print(tree[13], tree.root.value)
-    # tree[7] = 'third'
-    # print(tree[7])
-    tree[10] = 'root'
-    tree[7] = 'left'
-    tree[12] = 'right'
-    tree[9] = 'left->right'
-    tree[8] = 'left->right->left'
-    tree[6] = 'left->left'
-    del tree[9]
-    # print
-    # print(tree[7], tree.root.left, tree.root.right)
-    # tree[6] = 'forth'
-    # print(tree[6], tree.root.left.left.key, tree.root.right)
+    tree['root'] = 10
+    print(list(tree.values()))
+    del tree['root']
+    print(list(tree.values()))
